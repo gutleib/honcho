@@ -434,6 +434,28 @@ The deriver generates representations, summaries, peer cards, and manages dreami
 
 Contributors: see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for pre-commit setup. Deploying to Fly.io: see [Self-hosting docs → Deploying on Fly.io](https://honcho.dev/docs/v3/contributing/self-hosting#deploying-on-fly-io).
 
+### Russian Self-Hosted Fork / Русский самостоятельный хостинг
+
+> Адаптировано для России: DeepSeek LLM (deepseek-chat), локальные эмбеддинги BAAI/bge-m3 (1024-dim) через Infinity, PostgreSQL+pgvector. Полный self-hosted стек без внешних API для эмбеддингов.
+
+```bash
+git clone https://github.com/gutleib/honcho.git
+cd honcho
+git checkout selfhosted-ru
+cp .env.selfhosted.template .env   # заполнить ключи: DEEPSEEK_API_KEY, пароли
+docker compose -f docker-compose.selfhosted.yml up -d --build
+```
+
+**Отличия от upstream:**
+
+| Компонент | Upstream | Self-hosted RU |
+|---|---|---|
+| LLM | OpenAI / Gemini / Anthropic | DeepSeek (deepseek-chat) |
+| Эмбеддинги | OpenRouter / OpenAI API | Infinity (BAAI/bge-m3, 1024-dim) |
+| Размерность | 1536 | 1024 |
+| Деплой | `docker compose up` | `docker compose -f docker-compose.selfhosted.yml up` |
+| Конфигурация | `.env.template` | `.env.selfhosted.template` |
+
 ## Configuration
 
 Honcho uses a flexible configuration system that supports both TOML files and environment variables. Configuration values are loaded in priority order: **environment variables > `.env` file > `config.toml` > defaults**.
