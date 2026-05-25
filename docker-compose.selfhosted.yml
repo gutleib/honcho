@@ -53,7 +53,7 @@ services:
     # Пиково >512 MB при запуске из-за загрузки токенизаторов и моделей
 
   embedding:
-    image: michaelf34/infinity:latest-cpu
+    image: michaelf34/infinity:0.0.77-cpu
     restart: unless-stopped
     ports:
       - "127.0.0.1:7997:7997"
