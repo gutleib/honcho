@@ -46,7 +46,7 @@ services:
       - path: .env
         required: false
     restart: unless-stopped
-    mem_limit: 512M
+    mem_limit: 1G
 
   embedding:
     image: michaelf34/infinity:latest-cpu
@@ -61,7 +61,9 @@ services:
       - "7997"
     volumes:
       - embedding-cache:/app/.cache/huggingface
-    mem_limit: 3G
+    mem_limit: 8G
+    # BAAI/bge-m3 загружает ~6.6 GB в RAM при первом запуске.
+    # Пиковое потребление выше из-за кеширования токенизатора.
 
   database:
     image: pgvector/pgvector:pg15

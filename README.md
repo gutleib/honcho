@@ -456,6 +456,23 @@ docker compose -f docker-compose.selfhosted.yml up -d --build
 | Деплой | `docker compose up` | `docker compose -f docker-compose.selfhosted.yml up` |
 | Конфигурация | `.env.template` | `.env.selfhosted.template` |
 
+**Системные требования** (основано на реальной эксплуатации):
+
+| Ресурс | Минимум | Рекомендуется | Примечание |
+|---|---|---|---|
+| RAM | 10 GB | 12+ GB | BAAI/bge-m3 загружает ~6.6 GB, API-сервер пиково потребляет >512 MB |
+| CPU | 4 ядра | 8 ядер | Infinity активно использует CPU при первом запуске и эмбеддинге |
+| Диск | 20 GB | 40+ GB | Модель ~3 GB + кеш HuggingFace + PostgreSQL + Redis |
+
+**Лимиты контейнеров в docker-compose.selfhosted.yml:**
+
+| Контейнер | mem_limit |
+|---|---|
+| api (Honcho) | 1G |
+| embedding (Infinity + bge-m3) | 8G |
+| database (pgvector) | 256M |
+| redis | 128M |
+
 ## Configuration
 
 Honcho uses a flexible configuration system that supports both TOML files and environment variables. Configuration values are loaded in priority order: **environment variables > `.env` file > `config.toml` > defaults**.
