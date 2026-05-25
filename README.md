@@ -451,7 +451,7 @@ docker compose -f docker-compose.selfhosted.yml up -d --build
 | Компонент | Upstream | Self-hosted RU |
 |---|---|---|
 | LLM | OpenAI / Gemini / Anthropic | DeepSeek (deepseek-chat) |
-| Эмбеддинги | OpenRouter / OpenAI API | Infinity (BAAI/bge-m3, 1024-dim) |
+| Эмбеддинги | OpenRouter / OpenAI API | Infinity (deepvk/USER-bge-m3, 1024-dim) |
 | Размерность | 1536 | 1024 |
 | Деплой | `docker compose up` | `docker compose -f docker-compose.selfhosted.yml up` |
 | Конфигурация | `.env.template` | `.env.selfhosted.template` |
@@ -460,7 +460,7 @@ docker compose -f docker-compose.selfhosted.yml up -d --build
 
 | Ресурс | Минимум | Рекомендуется | Примечание |
 |---|---|---|---|
-| RAM | 10 GB | 12+ GB | BAAI/bge-m3 загружает ~6.6 GB, API-сервер пиково потребляет >512 MB |
+| RAM | 10 GB | 12+ GB | deepvk/USER-bge-m3 загружает ~6.6 GB, API-сервер пиково потребляет >512 MB |
 | CPU | 4 ядра | 8 ядер | Infinity активно использует CPU при первом запуске и эмбеддинге |
 | Диск | 20 GB | 40+ GB | Модель ~3 GB + кеш HuggingFace + PostgreSQL + Redis |
 

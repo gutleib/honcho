@@ -60,14 +60,16 @@ services:
     command:
       - "v2"
       - "--model-id"
-      - "BAAI/bge-m3"
+      - "deepvk/USER-bge-m3"
       - "--port"
       - "7997"
     volumes:
       - embedding-cache:/app/.cache/huggingface
     mem_limit: 8G
-    # BAAI/bge-m3 загружает ~6.6 GB в RAM при первом запуске.
-    # Пиковое потребление выше из-за кеширования токенизатора.
+    # deepvk/USER-bge-m3 — специально обучена для русского языка.
+    # Русский MTEB: 0.706 (против 0.689 у BAAI/bge-m3).
+    # Размерность 1024, совместима с Honcho из коробки.
+    # Загружает ~6.6 GB в RAM при первом запуске.
 
   database:
     image: pgvector/pgvector:pg15
