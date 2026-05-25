@@ -61,6 +61,8 @@ services:
       - "v2"
       - "--model-id"
       - "deepvk/USER-bge-m3"
+      - "--engine"
+      - "torch"
       - "--port"
       - "7997"
     volumes:
