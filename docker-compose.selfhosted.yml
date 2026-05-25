@@ -2,12 +2,15 @@
 # 1-3 пользователя, локальная сеть
 #
 # Деплой:
-#   1. Скопировать .env.template → .env, заполнить ключи
-#   2. docker compose up -d --build
+#   1. Скопировать .env.selfhosted.template → .env, заполнить ключи
+#   2. docker compose -f docker-compose.selfhosted.yml up -d --build
 #
 # Порты:
-#   - 8000: API (локальная сеть)
+#   - 8000: API (только localhost — для внешнего доступа используй reverse proxy)
 #   - 5432, 6379, 7997: только localhost
+#
+# Системные требования: минимум 10 GB RAM, рекомендуется 12+ GB.
+# BAAI/bge-m3 загружает ~6.6 GB, API пиково >512 MB.
 
 services:
   api:
@@ -23,7 +26,7 @@ services:
       embedding:
         condition: service_started
     ports:
-      - "0.0.0.0:8000:8000"
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test:
         [
@@ -44,9 +47,10 @@ services:
       - DB_MAX_OVERFLOW=5
     env_file:
       - path: .env
-        required: false
+        required: true
     restart: unless-stopped
     mem_limit: 1G
+    # Пиково >512 MB при запуске из-за загрузки токенизаторов и моделей
 
   embedding:
     image: michaelf34/infinity:latest-cpu
@@ -85,6 +89,8 @@ services:
       timeout: 5s
       retries: 5
     mem_limit: 256M
+    # При реальной эксплуатации: стабильно 64 MB, пиково до 150 MB.
+    # Если нагрузка выше — поднять до 512M.
 
   redis:
     image: redis:8.2
@@ -92,10 +98,12 @@ services:
     ports:
       - "127.0.0.1:6379:6379"
     command: redis-server --requirepass ${REDIS_PASSWORD} --save 900 1 --save 300 10
+    environment:
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping"]
+      test: ["CMD-SHELL", "redis-cli ping"]
       interval: 10s
       timeout: 5s
       retries: 5
