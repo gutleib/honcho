@@ -158,10 +158,18 @@ class OpenAIBackend:
                     content_override=content,
                 )
             except (BadRequestError, json.JSONDecodeError, ValidationError):
-                fallback_response = await self._create_structured_response(
-                    params=params,
-                    response_format=response_format,
-                )
+                try:
+                    fallback_response = await self._create_structured_response(
+                        params=params,
+                        response_format=response_format,
+                    )
+                except BadRequestError:
+                    # Provider rejects json_schema entirely (e.g. deepseek-chat).
+                    # Fall back to json_object + schema hint in system message.
+                    fallback_response = await self._create_json_object_response(
+                        params=params,
+                        response_format=response_format,
+                    )
                 content = self._parse_or_repair_structured_content(
                     fallback_response,
                     response_format,
@@ -389,6 +397,39 @@ class OpenAIBackend:
             },
         }
         return await self._client.chat.completions.create(**structured_params)
+
+    async def _create_json_object_response(
+        self,
+        *,
+        params: dict[str, Any],
+        response_format: type[BaseModel],
+    ) -> Any:
+        """Fallback for providers that reject json_schema (e.g. deepseek-chat).
+
+        Sends the expected JSON schema as a system message so the model knows
+        the output structure, then requests json_object mode.
+        """
+        json_params = {k: v for k, v in params.items() if k != "response_format"}
+        json_params["response_format"] = {"type": "json_object"}
+
+        schema_str = json.dumps(response_format.model_json_schema())
+        schema_instruction = (
+            f"Respond with valid JSON matching exactly this schema:\n{schema_str}"
+        )
+        messages: list[dict[str, Any]] = list(json_params.get("messages", []))
+        if messages and messages[0].get("role") == "system":
+            messages = [
+                {
+                    "role": "system",
+                    "content": messages[0]["content"] + "\n\n" + schema_instruction,
+                },
+                *messages[1:],
+            ]
+        else:
+            messages = [{"role": "system", "content": schema_instruction}, *messages]
+        json_params["messages"] = messages
+
+        return await self._client.chat.completions.create(**json_params)
 
     @staticmethod
     def _parse_or_repair_structured_content(
